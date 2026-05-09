@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.contrib.auth.models import User
 from django.utils import timezone
+from utils.compressors import compress_image  # ← AJOUTÉ
 
 class BlogPost(models.Model):
     STATUS_CHOICES = [
@@ -29,14 +30,31 @@ class BlogPost(models.Model):
         verbose_name_plural = "Articles"
     
     def save(self, *args, **kwargs):
+        # Génération du slug si vide
         if not self.slug:
             self.slug = slugify(self.title)
+        
+        # Date de publication
         if self.status == 'published' and not self.published_at:
             self.published_at = timezone.now()
+        
+        # Compression auto de l'image à la une
+        if self.featured_image and hasattr(self.featured_image, 'file'):
+            # Vérifier si l'image est trop grande (> 300KB pour le blog)
+            if self.featured_image.size > 300 * 1024:  # 300KB
+                self.featured_image = compress_image(self.featured_image, max_size=800, quality=75)
+        
         super().save(*args, **kwargs)
     
     def __str__(self):
         return self.title
+    
+    def get_tag_list(self):
+        """Retourne la liste des tags"""
+        if self.tags:
+            return [tag.strip() for tag in self.tags.split(',')]
+        return []
+
 
 class Comment(models.Model):
     post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name='comments', verbose_name="Article")

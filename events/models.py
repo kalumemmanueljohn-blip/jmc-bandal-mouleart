@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from utils.compressors import compress_image  # ← AJOUTÉ
 
 class Event(models.Model):
     STATUS_CHOICES = [
@@ -30,6 +31,14 @@ class Event(models.Model):
     def __str__(self):
         return self.title
     
+    def save(self, *args, **kwargs):
+        # Compression auto de l'image avant sauvegarde
+        if self.image and hasattr(self.image, 'file'):
+            # Vérifier si l'image est trop grande (> 500KB)
+            if self.image.size > 500 * 1024:  # 500KB
+                self.image = compress_image(self.image, max_size=1200, quality=75)
+        super().save(*args, **kwargs)
+    
     def is_full(self):
         if self.max_participants == 0:
             return False
@@ -38,7 +47,8 @@ class Event(models.Model):
     def remaining_places(self):
         if self.max_participants == 0:
             return "Illimité"
-        return self.max_participants - self.participants.count()
+        places = self.max_participants - self.participants.count()
+        return max(0, places)
     
     def participants_count(self):
         return self.participants.count()

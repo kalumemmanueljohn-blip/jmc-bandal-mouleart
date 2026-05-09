@@ -20,8 +20,8 @@
             <p>Participez aux activités et rencontres de la communauté</p>
         </div>
         
-        <!-- Bouton Ajouter un événement -->
-        {% if user.is_staff or user.is_superuser %}
+        <!-- ✅ Bouton Ajouter un événement - UNIQUEMENT SUPERUSER -->
+        {% if user.is_superuser %}
         <div class="admin-actions">
             <a href="{% url 'add_event' %}" class="btn-add-event">
                 <i class="bi bi-plus-circle"></i> Ajouter un événement
@@ -157,9 +157,25 @@
                                 {% endif %}
                             </span>
                         </div>
-                        <a href="{% url 'event_detail' event.id %}" class="event-btn">
-                            Détails <i class="bi bi-arrow-right"></i>
-                        </a>
+                        <div class="event-actions">
+                            <a href="{% url 'event_detail' event.id %}" class="event-btn">
+                                Détails <i class="bi bi-arrow-right"></i>
+                            </a>
+                            
+                            <!-- ✅ Boutons Modifier/Supprimer - UNIQUEMENT SUPERUSER -->
+                            {% if user.is_superuser %}
+                            <div class="admin-event-actions">
+                                <a href="{% url 'event_edit' event.id %}" class="btn-edit" title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'event_delete' event.id %}" class="btn-delete" 
+                                   onclick="return confirm('⚠️ Supprimer définitivement cet événement ?\n\nTitre: {{ event.title }}\nDate: {{ event.date|date:'d/m/Y' }}\n\nCette action est irréversible !')" 
+                                   title="Supprimer">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -170,7 +186,8 @@
                 </div>
                 <h3>Aucun événement pour le moment</h3>
                 <p>Revenez bientôt pour découvrir nos prochaines activités !</p>
-                {% if user.is_staff or user.is_superuser %}
+                <!-- ✅ Bouton création premier événement - UNIQUEMENT SUPERUSER -->
+                {% if user.is_superuser %}
                     <a href="{% url 'add_event' %}" class="btn-add-first">
                         <i class="bi bi-plus-circle"></i> Créer le premier événement
                     </a>
@@ -203,6 +220,18 @@
                     <a href="{% url 'event_detail' event.id %}" class="btn-list">
                         Voir <i class="bi bi-arrow-right"></i>
                     </a>
+                    <!-- ✅ Boutons admin dans vue liste - UNIQUEMENT SUPERUSER -->
+                    {% if user.is_superuser %}
+                    <div class="admin-list-actions">
+                        <a href="{% url 'event_edit' event.id %}" class="btn-edit-small" title="Modifier">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'event_delete' event.id %}" class="btn-delete-small" 
+                           onclick="return confirm('⚠️ Supprimer {{ event.title }} ?')" title="Supprimer">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         {% endfor %}
@@ -222,7 +251,7 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* En-tête - Sans vagues */
+/* En-tête */
 .events-header {
     background: linear-gradient(135deg, #1e3a5f 0%, #3498db 100%);
     border-radius: 30px;
@@ -291,45 +320,28 @@
     position: absolute;
     top: 1.5rem;
     right: 1.5rem;
-    z-index: 3;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
 }
 
 .btn-add-event {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(255,255,255,0.2);
-    backdrop-filter: blur(10px);
-    color: white;
     padding: 0.6rem 1.2rem;
     border-radius: 30px;
     text-decoration: none;
     font-weight: bold;
     transition: all 0.3s;
-    border: 1px solid rgba(255,255,255,0.3);
+    background: #27ae60;
+    color: white;
+    border: none;
 }
 
 .btn-add-event:hover {
-    background: rgba(255,255,255,0.4);
     transform: scale(1.05);
-}
-
-.btn-add-first {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 1rem;
-    background: #f39c12;
-    color: white;
-    padding: 0.8rem 1.5rem;
-    border-radius: 30px;
-    text-decoration: none;
-    transition: all 0.3s;
-}
-
-.btn-add-first:hover {
-    background: #e67e22;
-    transform: translateY(-2px);
+    filter: brightness(1.1);
 }
 
 /* Compteur */
@@ -428,7 +440,6 @@
     color: white;
 }
 
-/* Espacement entre les boutons de vue */
 .view-group {
     display: flex;
     gap: 10px;
@@ -665,6 +676,12 @@
     font-weight: 500;
 }
 
+.event-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
 .event-btn {
     background: #3498db;
     color: white;
@@ -683,6 +700,37 @@
     gap: 0.5rem;
 }
 
+/* Boutons admin sur les cartes */
+.admin-event-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-edit, .btn-delete {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.btn-edit {
+    background: #3498db;
+    color: white;
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-edit:hover, .btn-delete:hover {
+    transform: scale(1.1);
+}
+
 /* Vue liste */
 .events-list-view {
     display: flex;
@@ -699,6 +747,7 @@
     border-radius: 15px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     transition: all 0.3s;
+    position: relative;
 }
 
 .event-list-item:hover {
@@ -788,6 +837,37 @@
     gap: 8px;
 }
 
+/* Boutons admin dans la vue liste */
+.admin-list-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-edit-small, .btn-delete-small {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.btn-edit-small {
+    background: #3498db;
+    color: white;
+}
+
+.btn-delete-small {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-edit-small:hover, .btn-delete-small:hover {
+    transform: scale(1.1);
+}
+
 /* État vide */
 .no-events {
     text-align: center;
@@ -809,6 +889,24 @@
 
 .no-events p {
     color: #7f8c8d;
+}
+
+.btn-add-first {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 1rem;
+    background: #27ae60;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 30px;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.btn-add-first:hover {
+    background: #229954;
+    transform: translateY(-2px);
 }
 
 /* Responsive */
@@ -848,7 +946,7 @@
     .admin-actions {
         position: static;
         margin-top: 1rem;
-        display: inline-block;
+        justify-content: center;
     }
     
     .events-grid {
@@ -866,6 +964,7 @@
     
     .event-list-actions {
         justify-content: center;
+        flex-wrap: wrap;
     }
     
     .counter-box {
@@ -890,6 +989,16 @@
     
     .view-group {
         gap: 8px;
+    }
+    
+    .event-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .event-actions {
+        width: 100%;
+        justify-content: space-between;
     }
 }
 </style>

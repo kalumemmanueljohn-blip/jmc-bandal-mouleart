@@ -214,15 +214,15 @@
         </div>
     </div>
 
-    <!-- Actions admin -->
-    {% if user.is_staff or user.is_superuser %}
+    <!-- ✅ Actions admin - UNIQUEMENT SUPERUSER -->
+    {% if user.is_superuser %}
     <div class="admin-actions-card">
         <div class="section-title">
             <i class="bi bi-shield-lock"></i>
             <h2>Administration</h2>
         </div>
         <div class="admin-buttons">
-            <a href="{% url 'admin:events_event_change' event.id %}" class="admin-btn edit">
+            <a href="/admin/events/event/{{ event.id }}/change/" class="admin-btn edit" target="_blank">
                 <i class="bi bi-pencil-square"></i> Modifier
             </a>
             <a href="{% url 'delete_event' event.id %}" 

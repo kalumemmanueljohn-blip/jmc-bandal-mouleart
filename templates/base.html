@@ -30,6 +30,7 @@
             --radius: 12px;
             --radius-lg: 20px;
             --transition: all 0.3s ease;
+            --admin-badge: #e74c3c;
         }
 
         * {
@@ -134,6 +135,37 @@
             background: linear-gradient(135deg, var(--secondary-dark), #d35400);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+        }
+
+        /* Badge administrateur */
+        .admin-link {
+            position: relative;
+            border-left: 2px solid var(--admin-badge);
+            margin-left: 5px;
+        }
+
+        .admin-link::before {
+            content: "👑";
+            position: absolute;
+            left: -8px;
+            top: -8px;
+            font-size: 12px;
+            background: var(--admin-badge);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+        }
+
+        .nav-divider {
+            width: 1px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 0 5px;
         }
 
         /* ========== MENU HAMBURGER ========== */
@@ -558,6 +590,12 @@
             .verse-text::before,
             .verse-text::after { display: none; }
             .verse-site-name { font-size: 0.7rem; }
+            
+            .nav-divider {
+                width: 100%;
+                height: 1px;
+                margin: 10px 0;
+            }
         }
 
         @media (max-width: 480px) {
@@ -592,11 +630,12 @@
             <ul class="nav-menu" id="navMenu">
                 <li><a href="{% url 'home' %}" class="nav-link"><i class="bi bi-house-door"></i> Accueil</a></li>
                 <li><a href="{% url 'about' %}" class="nav-link"><i class="bi bi-info-circle"></i> À propos</a></li>
-                <li><a href="{% url 'events_list' %}" class="nav-link"><i class="bi bi-calendar-event"></i> Événements</a></li>
+                <li><a href="/events/" class="nav-link"><i class="bi bi-calendar-event"></i> Événements</a></li>
                 <li><a href="{% url 'teachings' %}" class="nav-link"><i class="bi bi-headphones"></i> Enseignements</a></li>
                 <li><a href="{% url 'blog' %}" class="nav-link"><i class="bi bi-pencil-square"></i> Blog</a></li>
                 <li><a href="{% url 'gallery' %}" class="nav-link"><i class="bi bi-images"></i> Galerie</a></li>
                 <li><a href="{% url 'contact' %}" class="nav-link"><i class="bi bi-envelope"></i> Contact</a></li>
+                
                 {% if user.is_authenticated %}
                     <li><a href="{% url 'dashboard' %}" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li><a href="{% url 'logout' %}" class="nav-link"><i class="bi bi-box-arrow-right"></i> Déconnexion</a></li>
@@ -604,12 +643,22 @@
                     <li><a href="{% url 'login' %}" class="nav-link"><i class="bi bi-key"></i> Connexion</a></li>
                     <li><a href="{% url 'register' %}" class="nav-link"><i class="bi bi-person-plus"></i> Inscription</a></li>
                 {% endif %}
+                
                 <li><a href="{% url 'donate' %}" class="nav-link donate-nav"><i class="bi bi-heart-fill"></i> Don</a></li>
-                {% if user.is_staff %}
-                <li><a href="{% url 'subscribers_list' %}" class="nav-link"><i class="bi bi-people"></i> Abonnés WhatsApp</a></li>
-                {% endif %}
-                {% if user.is_staff or user.is_superuser %}
-                <li><a href="{% url 'manage_users' %}" class="nav-link"><i class="bi bi-people"></i> Gestion membres</a></li>
+                
+                <!-- SECTION ADMIN - UNIQUEMENT SUPERUSER -->
+                {% if user.is_superuser %}
+                    <li class="nav-divider"></li>
+                    <li class="admin-link">
+                        <a href="{% url 'subscribers_list' %}" class="nav-link">
+                            <i class="bi bi-whatsapp"></i> 📱 Abonnés WhatsApp
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'manage_users' %}" class="nav-link">
+                            <i class="bi bi-shield-lock-fill"></i> 👑 Gestion membres
+                        </a>
+                    </li>
                 {% endif %}
             </ul>
         </div>
@@ -633,7 +682,7 @@
             {% endfor %}
         {% endif %}
 
-        <!-- Verset du jour -->
+        <!-- Verset du jour en français -->
         <div class="verse-card">
             <div class="verse-logo-container">
                 <div class="verse-logo">
@@ -671,7 +720,7 @@
             <div>
                 <h4 class="footer-title"><i class="bi bi-share"></i> Suivez-nous</h4>
                 <div class="social-links">
-                    <a href="https://wa.me/243830360200"  target="blank"><i class="bi bi-whatsapp"></i></a>
+                    <a href="https://wa.me/243830360200" target="blank"><i class="bi bi-whatsapp"></i></a>
                     <a href="#"><i class="bi bi-facebook"></i></a>
                     <a href="#"><i class="bi bi-instagram"></i></a>
                     <a href="#"><i class="bi bi-youtube"></i></a>
@@ -722,60 +771,57 @@
             }
         });
 
-        // ========== VERSET DU JOUR AVEC API ==========
-        async function getVerseFromAPI() {
-            const today = new Date().toDateString();
-            const stored = localStorage.getItem('dailyVerse');
-            
-            if (stored && JSON.parse(stored).date === today) {
-                const verse = JSON.parse(stored).verse;
-                displayVerse(verse.text, verse.ref);
-                return;
-            }
-            
-            try {
-                const response = await fetch('https://bible-api.com/john%203:16?translation=kjv');
-                if (response.ok) {
-                    const data = await response.json();
-                    const verse = {
-                        text: data.text.replace(/[“”]/g, '"'),
-                        ref: data.reference
-                    };
-                    localStorage.setItem('dailyVerse', JSON.stringify({ date: today, verse: verse }));
-                    displayVerse(verse.text, verse.ref);
-                    return;
-                }
-            } catch (error) {
-                console.log('API échouée, utilisation versets locaux...');
-            }
-            
-            const localVerses = [
-                { text: "Je puis tout par celui qui me fortifie", ref: "Philippiens 4:13" },
-                { text: "Aimez-vous les uns les autres", ref: "Jean 15:12" },
-                { text: "Cherchez premièrement le royaume de Dieu", ref: "Matthieu 6:33" },
-                { text: "L'Éternel est mon berger", ref: "Psaume 23:1" },
-                { text: "Ne crains rien, car je suis avec toi", ref: "Ésaïe 41:10" },
-                { text: "Dieu est amour", ref: "1 Jean 4:8" },
-                { text: "Réjouissez-vous toujours dans le Seigneur", ref: "Philippiens 4:4" }
-            ];
-            
-            const randomIndex = Math.floor(Math.random() * localVerses.length);
-            const verse = localVerses[randomIndex];
-            localStorage.setItem('dailyVerse', JSON.stringify({ date: today, verse: verse }));
-            displayVerse(verse.text, verse.ref);
+        // ========== VERSET DU JOUR EN FRANÇAIS ==========
+        const frenchVerses = [
+            { text: "Car Dieu a tant aimé le monde qu'il a donné son Fils unique, afin que quiconque croit en lui ne périsse pas, mais qu'il ait la vie éternelle.", ref: "Jean 3:16" },
+            { text: "Je puis tout par celui qui me fortifie.", ref: "Philippiens 4:13" },
+            { text: "Nous savons que toutes choses concourent au bien de ceux qui aiment Dieu.", ref: "Romains 8:28" },
+            { text: "Car je connais les projets que j'ai formés sur vous, dit l'Éternel, projets de paix et non de malheur.", ref: "Jérémie 29:11" },
+            { text: "L'Éternel est mon berger, je ne manquerai de rien.", ref: "Psaume 23:1" },
+            { text: "Aimez-vous les uns les autres comme je vous ai aimés.", ref: "Jean 15:12" },
+            { text: "Cherchez premièrement le royaume de Dieu et sa justice.", ref: "Matthieu 6:33" },
+            { text: "Ne crains rien, car je suis avec toi.", ref: "Ésaïe 41:10" },
+            { text: "Dieu est amour, et celui qui demeure dans l'amour demeure en Dieu.", ref: "1 Jean 4:16" },
+            { text: "Réjouissez-vous toujours dans le Seigneur.", ref: "Philippiens 4:4" },
+            { text: "Je vous laisse la paix, je vous donne ma paix.", ref: "Jean 14:27" },
+            { text: "Tout ce que vous faites, faites-le de tout cœur, comme pour le Seigneur.", ref: "Colossiens 3:23" },
+            { text: "Heureux ceux qui procurent la paix, car ils seront appelés fils de Dieu.", ref: "Matthieu 5:9" },
+            { text: "Je vous ai parlé ainsi, afin que ma joie soit en vous.", ref: "Jean 15:11" },
+            { text: "L'amour du prochain n'offense point.", ref: "Romains 13:10" },
+            { text: "Le Seigneur est mon rocher, ma forteresse, mon libérateur.", ref: "Psaume 18:3" },
+            { text: "Heureux celui qui craint l'Éternel et qui marche dans ses voies.", ref: "Psaume 128:1" }
+        ];
+
+        function getRandomFrenchVerse() {
+            const randomIndex = Math.floor(Math.random() * frenchVerses.length);
+            return frenchVerses[randomIndex];
         }
-        
-        function displayVerse(text, ref) {
+
+        function displayVerse(verse) {
             const verseText = document.getElementById('verseText');
             const verseRef = document.getElementById('verseRef');
             
             if (verseText && verseRef) {
-                verseText.innerHTML = `“${text}”`;
-                verseRef.innerHTML = `— ${ref}`;
+                verseText.innerHTML = `“${verse.text}”`;
+                verseRef.innerHTML = `— ${verse.ref}`;
             }
         }
+
+        // Afficher un verset aléatoire au chargement
+        const verseOfTheDay = getRandomFrenchVerse();
+        displayVerse(verseOfTheDay);
         
-        getVerseFromAPI();
+        // Optionnel: Changer de verset chaque jour
+        const today = new Date().toDateString();
+        const stored = localStorage.getItem('dailyFrenchVerse');
+        
+        if (stored && JSON.parse(stored).date === today) {
+            displayVerse(JSON.parse(stored).verse);
+        } else {
+            const newVerse = getRandomFrenchVerse();
+            localStorage.setItem('dailyFrenchVerse', JSON.stringify({ date: today, verse: newVerse }));
+            displayVerse(newVerse);
+        }
     </script>
     
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>

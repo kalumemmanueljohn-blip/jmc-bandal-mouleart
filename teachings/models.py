@@ -1,4 +1,5 @@
 from django.db import models
+from utils.compressors import compress_image, compress_video, compress_audio  # ← AJOUTÉ compress_audio
 
 class TeachingCategory(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nom")
@@ -11,6 +12,7 @@ class TeachingCategory(models.Model):
     
     def __str__(self):
         return self.name
+
 
 class Teaching(models.Model):
     TYPE_CHOICES = [
@@ -38,5 +40,51 @@ class Teaching(models.Model):
         verbose_name = "Enseignement"
         verbose_name_plural = "Enseignements"
     
+    def save(self, *args, **kwargs):
+        # Compression selon le type de contenu
+        if self.file and hasattr(self.file, 'file'):
+            # Pour les fichiers audio (MP3)
+            if self.content_type == 'audio' and self.file.size > 5 * 1024 * 1024:  # > 5MB
+                try:
+                    self.file = compress_audio(self.file, bitrate='64k')
+                    print(f"✅ Audio compressé: {self.title} ({self.file.size//1024//1024}MB)")
+                except Exception as e:
+                    print(f"❌ Erreur compression audio {self.title}: {e}")
+            
+            # Pour les fichiers vidéo (MP4)
+            elif self.content_type == 'video' and self.file.size > 10 * 1024 * 1024:  # > 10MB
+                try:
+                    self.file = compress_video(self.file, max_width=854, bitrate='800k', fps=24)
+                    print(f"✅ Vidéo compressée: {self.title}")
+                except Exception as e:
+                    print(f"❌ Erreur compression vidéo {self.title}: {e}")
+            
+            # Pour les fichiers PDF (ne pas compresser)
+            elif self.content_type == 'pdf':
+                # Les PDF ne sont pas compressés par image
+                pass
+        
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         return self.title
+    
+    def get_icon(self):
+        """Retourne l'icône Bootstrap selon le type"""
+        icons = {
+            'audio': 'bi-mic-fill',
+            'video': 'bi-camera-reels-fill',
+            'pdf': 'bi-file-pdf-fill',
+            'text': 'bi-file-text-fill',
+        }
+        return icons.get(self.content_type, 'bi-file-earmark')
+    
+    def get_type_display_icon(self):
+        """Retourne l'affichage du type avec icône"""
+        types = {
+            'audio': '🎵 Audio',
+            'video': '🎥 Vidéo',
+            'pdf': '📄 PDF',
+            'text': '📝 Texte',
+        }
+        return types.get(self.content_type, self.content_type)

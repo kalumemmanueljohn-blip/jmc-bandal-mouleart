@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',
     
     # Applications du projet
     'core',
@@ -89,13 +90,16 @@ LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'home'
 
 # ============================================
-# DATABASE
+# DATABASE - SQLite3 (optimisé)
 # ============================================
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 30,  # Augmenter le timeout pour éviter les blocages
+        }
     }
 }
 
@@ -127,12 +131,13 @@ USE_I18N = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # ============================================
-# UPLOAD DE FICHIERS
+# UPLOAD DE FICHIERS (avec compression)
 # ============================================
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
