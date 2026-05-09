@@ -1,5 +1,5 @@
 from django.db import models
-from utils.compressors import compress_image, compress_video  # ← AJOUTÉ
+from utils.compressors import compress_image, compress_video, compress_audio  # ← AJOUTÉ compress_audio
 
 class TeachingCategory(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nom")
@@ -45,9 +45,11 @@ class Teaching(models.Model):
         if self.file and hasattr(self.file, 'file'):
             # Pour les fichiers audio (MP3)
             if self.content_type == 'audio' and self.file.size > 5 * 1024 * 1024:  # > 5MB
-                # L'audio nécessite une bibliothèque spécifique (pydub)
-                # On va juste avertir si trop gros
-                print(f"⚠️ Audio {self.title} fait {self.file.size//1024//1024}MB - non compressé")
+                try:
+                    self.file = compress_audio(self.file, bitrate='64k')
+                    print(f"✅ Audio compressé: {self.title} ({self.file.size//1024//1024}MB)")
+                except Exception as e:
+                    print(f"❌ Erreur compression audio {self.title}: {e}")
             
             # Pour les fichiers vidéo (MP4)
             elif self.content_type == 'video' and self.file.size > 10 * 1024 * 1024:  # > 10MB
