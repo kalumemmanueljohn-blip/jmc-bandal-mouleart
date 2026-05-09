@@ -14,42 +14,63 @@
             <p>Rejoignez notre communauté et grandissez dans la foi</p>
         </div>
 
-        <form method="post" class="register-form">
+        <!-- AFFICHAGE DES ERREURS -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-message" style="background:#f8d7da; color:#721c24; padding:12px; border-radius:8px; margin-bottom:20px;">
+                    <i class="bi bi-exclamation-triangle-fill"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if form.errors %}
+            <div style="background:#fff3cd; color:#856404; padding:15px; border-radius:8px; margin-bottom:20px;">
+                <strong>Veuillez corriger les erreurs :</strong>
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="post" class="register-form" id="registerForm">
             {% csrf_token %}
             
             <!-- Champs utilisateur standards -->
             <div class="form-group">
                 <label><i class="bi bi-person"></i> Nom d'utilisateur <span class="required">*</span></label>
-                {{ form.username }}
-                <small class="help-text"><i class="bi bi-info-circle"></i> 150 caractères maximum. Lettres, chiffres et @/./+/-/_ uniquement.</small>
+                <input type="text" name="username" id="id_username" class="form-control" placeholder="ex: jean_dupond" value="{{ form.username.value|default:'' }}" required>
+                <small class="help-text">150 caractères max. Lettres, chiffres et @/./+/-/_</small>
                 {% for error in form.username.errors %}
-                    <div class="error-message"><i class="bi bi-exclamation-triangle-fill"></i> {{ error }}</div>
+                    <div class="error-message">{{ error }}</div>
                 {% endfor %}
             </div>
 
             <div class="form-group">
                 <label><i class="bi bi-envelope"></i> Adresse email <span class="required">*</span></label>
-                {{ form.email }}
+                <input type="email" name="email" id="id_email" class="form-control" placeholder="ex: jean@exemple.com" value="{{ form.email.value|default:'' }}" required>
                 {% for error in form.email.errors %}
-                    <div class="error-message"><i class="bi bi-exclamation-triangle-fill"></i> {{ error }}</div>
+                    <div class="error-message">{{ error }}</div>
                 {% endfor %}
             </div>
 
             <div class="form-group">
                 <label><i class="bi bi-lock"></i> Mot de passe <span class="required">*</span></label>
-                {{ form.password1 }}
-                <small class="help-text"><i class="bi bi-info-circle"></i> Votre mot de passe doit contenir au moins 8 caractères.</small>
+                <input type="password" name="password1" id="id_password1" class="form-control" placeholder="Au moins 8 caractères" required>
+                <small class="help-text">Minimum 8 caractères</small>
                 {% for error in form.password1.errors %}
-                    <div class="error-message"><i class="bi bi-exclamation-triangle-fill"></i> {{ error }}</div>
+                    <div class="error-message">{{ error }}</div>
                 {% endfor %}
             </div>
 
             <div class="form-group">
                 <label><i class="bi bi-check-circle"></i> Confirmation du mot de passe <span class="required">*</span></label>
-                {{ form.password2 }}
-                <small class="help-text"><i class="bi bi-info-circle"></i> Saisissez le même mot de passe que précédemment, pour vérification.</small>
+                <input type="password" name="password2" id="id_password2" class="form-control" placeholder="Retapez votre mot de passe" required>
                 {% for error in form.password2.errors %}
-                    <div class="error-message"><i class="bi bi-exclamation-triangle-fill"></i> {{ error }}</div>
+                    <div class="error-message">{{ error }}</div>
                 {% endfor %}
             </div>
 
@@ -60,17 +81,19 @@
 
             <div class="form-group">
                 <label><i class="bi bi-telephone"></i> Téléphone</label>
-                {{ form.phone_number }}
+                <input type="tel" name="phone_number" id="id_phone_number" class="form-control" placeholder="+243 XXX XXX XXX" value="{{ form.phone_number.value|default:'' }}">
             </div>
 
             <div class="form-group">
                 <label><i class="bi bi-geo-alt"></i> Adresse</label>
-                {{ form.address }}
+                <input type="text" name="address" id="id_address" class="form-control" placeholder="Votre adresse" value="{{ form.address.value|default:'' }}">
             </div>
 
+            <!-- ✅ DATE DE NAISSANCE - VERSION TEXTE (compatible mobile) -->
             <div class="form-group">
                 <label><i class="bi bi-calendar"></i> Date de naissance</label>
-                {{ form.birth_date }}
+                <input type="text" name="birth_date" id="id_birth_date" class="form-control" placeholder="JJ/MM/AAAA (ex: 25/12/1990)" value="{{ form.birth_date.value|default:'' }}">
+                <small class="help-text">Format: JJ/MM/AAAA</small>
             </div>
 
             <!-- Type de membre -->
@@ -80,24 +103,35 @@
 
             <div class="form-group">
                 <label><i class="bi bi-person-badge"></i> Je suis <span class="required">*</span></label>
-                {{ form.member_type }}
+                <select name="member_type" id="id_member_type" class="form-control" required>
+                    <option value="guest" {% if form.member_type.value == 'guest' %}selected{% endif %}>👤 Invité / Visiteur</option>
+                    <option value="regular" {% if form.member_type.value == 'regular' %}selected{% endif %}>🙏 Membre régulier</option>
+                    <option value="staff" {% if form.member_type.value == 'staff' %}selected{% endif %}>👑 Membre du staff</option>
+                </select>
             </div>
 
             <!-- Département (visible uniquement si staff) -->
             <div class="form-group department-group" id="departmentGroup" style="display: none;">
                 <label><i class="bi bi-diagram-3"></i> Département</label>
-                {{ form.department }}
+                <select name="department" id="id_department" class="form-control">
+                    <option value="">Sélectionnez un département</option>
+                    <option value="coordination" {% if form.department.value == 'coordination' %}selected{% endif %}>🎯 Coordination</option>
+                    <option value="evangelisation" {% if form.department.value == 'evangelisation' %}selected{% endif %}>📢 Évangélisation</option>
+                    <option value="louange" {% if form.department.value == 'louange' %}selected{% endif %}>🎵 Louange</option>
+                    <option value="enseignement" {% if form.department.value == 'enseignement' %}selected{% endif %}>📖 Enseignement</option>
+                    <option value="technique" {% if form.department.value == 'technique' %}selected{% endif %}>💻 Technique / Médias</option>
+                    <option value="communication" {% if form.department.value == 'communication' %}selected{% endif %}>📱 Communication</option>
+                    <option value="accueil" {% if form.department.value == 'accueil' %}selected{% endif %}>🤝 Accueil</option>
+                    <option value="priere" {% if form.department.value == 'priere' %}selected{% endif %}>🙏 Prière</option>
+                    <option value="social" {% if form.department.value == 'social' %}selected{% endif %}>❤️ Action sociale</option>
+                </select>
                 <small class="help-text">Sélectionnez votre département au sein du staff</small>
-                {% for error in form.department.errors %}
-                    <div class="error-message"><i class="bi bi-exclamation-triangle-fill"></i> {{ error }}</div>
-                {% endfor %}
             </div>
 
             <!-- Membre régulier -->
             <div class="form-group regular-group" id="regularGroup" style="display: none;">
                 <label class="checkbox-label">
-                    {{ form.is_regular_member }}
-                    <span class="checkmark"></span>
+                    <input type="checkbox" name="is_regular_member" id="id_is_regular_member" {% if form.is_regular_member.value %}checked{% endif %}>
                     <span>Je prie déjà dans cette église</span>
                 </label>
             </div>
@@ -105,13 +139,12 @@
             <!-- Conditions générales -->
             <div class="form-terms">
                 <label class="checkbox-label">
-                    <input type="checkbox" required>
-                    <span class="checkmark"></span>
-                    J'accepte les <a href="#">conditions d'utilisation</a> et la <a href="#">politique de confidentialité</a>
+                    <input type="checkbox" name="accept_terms" id="accept_terms" required>
+                    <span>J'accepte les <a href="#">conditions d'utilisation</a> et la <a href="#">politique de confidentialité</a></span>
                 </label>
             </div>
             
-            <button type="submit" class="btn-register">
+            <button type="submit" class="btn-register" id="submitBtn">
                 <span>S'inscrire</span>
                 <i class="bi bi-arrow-right"></i>
             </button>
@@ -130,331 +163,26 @@
 </div>
 
 <style>
-/* Page d'inscription */
-.register-page {
-    min-height: calc(100vh - 200px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
-}
-
-.register-card {
-    max-width: 600px;
-    width: 100%;
-    background: white;
-    border-radius: 30px;
-    padding: 40px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.register-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 30px 60px rgba(0,0,0,0.15);
-}
-
-/* En-tête */
-.register-header {
-    text-align: center;
-    margin-bottom: 35px;
-}
-
-.register-icon {
-    width: 70px;
-    height: 70px;
-    background: linear-gradient(135deg, #27ae60, #229954);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px;
-    box-shadow: 0 10px 20px rgba(39,174,96,0.3);
-}
-
-.register-icon i {
-    font-size: 2.2rem;
-    color: white;
-}
-
-.register-header h1 {
-    font-size: 1.8rem;
-    color: #2c3e50;
-    margin-bottom: 8px;
-}
-
-.register-header p {
-    color: #7f8c8d;
-    font-size: 0.9rem;
-}
-
-/* Formulaire */
-.register-form {
-    margin-bottom: 25px;
-}
-
-.form-group {
-    margin-bottom: 22px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    color: #2c3e50;
-}
-
-.form-group label i {
-    margin-right: 6px;
-    color: #27ae60;
-}
-
-.required {
-    color: #e74c3c;
-    margin-left: 3px;
-}
-
-.form-group input, .form-group select {
-    width: 100%;
-    padding: 12px 16px;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    transition: all 0.3s;
-    background: white;
-}
-
-.form-group select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 15px center;
-}
-
-.form-group input:focus, .form-group select:focus {
-    outline: none;
-    border-color: #27ae60;
-    box-shadow: 0 0 0 3px rgba(39,174,96,0.1);
-}
-
-/* Help text */
-.help-text {
-    display: block;
-    font-size: 0.7rem;
-    color: #95a5a6;
-    margin-top: 6px;
-}
-
-.help-text i {
-    margin-right: 4px;
-    font-size: 0.65rem;
-}
-
-/* Error message */
-.error-message {
-    color: #e74c3c;
-    font-size: 0.75rem;
-    margin-top: 6px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.error-message i {
-    font-size: 0.7rem;
-}
-
-/* Form divider */
-.form-divider {
-    text-align: center;
-    margin: 25px 0 20px;
-    position: relative;
-}
-
-.form-divider::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: #e0e0e0;
-    z-index: 1;
-}
-
-.form-divider span {
-    background: white;
-    padding: 0 15px;
-    position: relative;
-    z-index: 2;
-    color: #7f8c8d;
-    font-size: 0.85rem;
-}
-
-/* Checkbox */
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    color: #555;
-}
-
-.checkbox-label input {
-    display: none;
-}
-
-.checkmark {
-    width: 18px;
-    height: 18px;
-    border: 2px solid #27ae60;
-    border-radius: 4px;
-    display: inline-block;
-    position: relative;
-    background: white;
-}
-
-.checkbox-label input:checked + .checkmark::after {
-    content: "✓";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #27ae60;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-.checkbox-label a {
-    color: #27ae60;
-    text-decoration: none;
-}
-
-.checkbox-label a:hover {
-    text-decoration: underline;
-}
-
-/* Checkbox termes */
-.form-terms {
-    margin: 25px 0;
-}
-
-/* Bouton inscription */
-.btn-register {
-    width: 100%;
-    background: linear-gradient(135deg, #27ae60, #229954);
-    color: white;
-    padding: 14px 20px;
-    border: none;
-    border-radius: 40px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.btn-register:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(39,174,96,0.4);
-    gap: 15px;
-}
-
-/* Footer */
-.register-footer {
-    text-align: center;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
-
-.register-footer p {
-    color: #7f8c8d;
-    font-size: 0.85rem;
-}
-
-.register-footer a {
-    color: #27ae60;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.register-footer a:hover {
-    text-decoration: underline;
-}
-
-/* Bénéfices */
-.register-benefits {
-    margin-top: 25px;
-    padding-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.register-benefits p {
-    font-size: 0.75rem;
-    color: #7f8c8d;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.register-benefits i {
-    color: #27ae60;
-    font-size: 0.7rem;
-}
-
-/* Responsive */
+/* Garde ton CSS existant, ajoute juste : */
 @media (max-width: 768px) {
-    .register-card {
-        padding: 30px 25px;
-    }
-    
-    .register-header h1 {
-        font-size: 1.5rem;
-    }
-    
-    .register-icon {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .register-icon i {
-        font-size: 1.8rem;
-    }
-    
-    .register-benefits {
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
+    .form-group input, .form-group select {
+        font-size: 16px !important; /* Empêche le zoom sur iOS */
     }
 }
 
-@media (max-width: 480px) {
-    .register-card {
-        padding: 25px 20px;
-    }
-    
-    .form-group input, .form-group select {
-        padding: 10px 14px;
-    }
-    
-    .btn-register {
-        padding: 12px 16px;
-    }
+.alert-message {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
 
 <script>
 // Gestion de l'affichage des champs selon le type de membre
-const memberTypeSelect = document.querySelector('#id_member_type');
+const memberTypeSelect = document.getElementById('id_member_type');
 const departmentGroup = document.getElementById('departmentGroup');
 const regularGroup = document.getElementById('regularGroup');
 
@@ -462,20 +190,84 @@ function toggleFields() {
     const selectedType = memberTypeSelect ? memberTypeSelect.value : 'guest';
     
     if (selectedType === 'staff') {
-        departmentGroup.style.display = 'block';
-        regularGroup.style.display = 'none';
+        if (departmentGroup) departmentGroup.style.display = 'block';
+        if (regularGroup) regularGroup.style.display = 'none';
+        // Rendre le département requis si staff
+        const deptSelect = document.getElementById('id_department');
+        if (deptSelect) deptSelect.required = true;
     } else if (selectedType === 'regular') {
-        departmentGroup.style.display = 'none';
-        regularGroup.style.display = 'block';
+        if (departmentGroup) departmentGroup.style.display = 'none';
+        if (regularGroup) regularGroup.style.display = 'block';
+        if (departmentGroup) {
+            const deptSelect = document.getElementById('id_department');
+            if (deptSelect) deptSelect.required = false;
+        }
     } else {
-        departmentGroup.style.display = 'none';
-        regularGroup.style.display = 'none';
+        if (departmentGroup) departmentGroup.style.display = 'none';
+        if (regularGroup) regularGroup.style.display = 'none';
+        if (departmentGroup) {
+            const deptSelect = document.getElementById('id_department');
+            if (deptSelect) deptSelect.required = false;
+        }
     }
 }
 
 if (memberTypeSelect) {
     memberTypeSelect.addEventListener('change', toggleFields);
     toggleFields();
+}
+
+// Validation JavaScript avant soumission (pour mobile)
+const form = document.getElementById('registerForm');
+const submitBtn = document.getElementById('submitBtn');
+
+if (form) {
+    form.addEventListener('submit', function(e) {
+        // Vérifier les mots de passe
+        const password1 = document.getElementById('id_password1');
+        const password2 = document.getElementById('id_password2');
+        
+        if (password1 && password2 && password1.value !== password2.value) {
+            e.preventDefault();
+            alert('Les mots de passe ne correspondent pas !');
+            password2.focus();
+            return false;
+        }
+        
+        // Vérifier mot de passe minimum
+        if (password1 && password1.value.length < 8) {
+            e.preventDefault();
+            alert('Le mot de passe doit contenir au moins 8 caractères !');
+            password1.focus();
+            return false;
+        }
+        
+        // Vérifier email
+        const email = document.getElementById('id_email');
+        if (email && email.value && !email.value.includes('@')) {
+            e.preventDefault();
+            alert('Veuillez entrer une adresse email valide !');
+            email.focus();
+            return false;
+        }
+        
+        // Vérifier conditions
+        const acceptTerms = document.getElementById('accept_terms');
+        if (acceptTerms && !acceptTerms.checked) {
+            e.preventDefault();
+            alert('Veuillez accepter les conditions d\'utilisation');
+            acceptTerms.focus();
+            return false;
+        }
+        
+        // Désactiver le bouton pour éviter double soumission
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>Inscription en cours...</span><i class="bi bi-hourglass-split"></i>';
+        }
+        
+        return true;
+    });
 }
 </script>
 {% endblock %}
