@@ -13,7 +13,8 @@
         </div>
         <h1>🎧 Enseignements</h1>
         <p>Messages audio et vidéo pour nourrir votre foi</p>
-        {% if user.is_staff or user.is_superuser %}
+        <!-- ✅ Bouton Ajouter - UNIQUEMENT SUPERUSER -->
+        {% if user.is_superuser %}
             <a href="{% url 'add_teaching' %}" class="btn-add">
                 <i class="bi bi-plus-circle"></i> Proposer un contenu
             </a>
@@ -97,8 +98,8 @@
                     {% endif %}
                 </div>
                 
-                <!-- Boutons admin -->
-                {% if user.is_staff or user.is_superuser %}
+                <!-- ✅ Boutons admin - UNIQUEMENT SUPERUSER -->
+                {% if user.is_superuser %}
                     <div class="admin-actions">
                         <a href="/admin/teachings/teaching/{{ teaching.id }}/change/" class="btn-edit" target="_blank">
                             <i class="bi bi-pencil-square"></i> Modifier
@@ -118,7 +119,8 @@
                 </div>
                 <h3>Aucun enseignement pour le moment</h3>
                 <p>Revenez bientôt pour découvrir nos contenus spirituels !</p>
-                {% if user.is_staff or user.is_superuser %}
+                <!-- ✅ Bouton état vide - UNIQUEMENT SUPERUSER -->
+                {% if user.is_superuser %}
                     <a href="{% url 'add_teaching' %}" class="btn-add-first">
                         <i class="bi bi-plus-circle"></i> Ajouter le premier enseignement
                     </a>
