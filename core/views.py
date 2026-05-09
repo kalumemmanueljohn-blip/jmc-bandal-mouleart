@@ -1,36 +1,37 @@
-from django.shortcuts import render
-from events.models import Event
-from core.models import VerseOfTheDay
-from django.utils import timezone
-from django.shortcuts import redirect
-from django.contrib import messages
-from .models import Subscriber
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import models
-import csv
 from django.http import HttpResponse
-from django.contrib.admin.views.decorators import staff_member_required
+from django.utils import timezone
+import csv
+
+from events.models import Event
+# from core.models import VerseOfTheDay  # ❌ COMMENTÉ - Modèle inexistant
 from .models import Subscriber
+
 
 def home(request):
     upcoming_events = Event.objects.filter(
         status='upcoming', 
         date__gte=timezone.now()
     )[:3]
-    verse_of_day = VerseOfTheDay.objects.filter(is_active=True).first()
+    # verse_of_day = VerseOfTheDay.objects.filter(is_active=True).first()  # ❌ COMMENTÉ
     
     context = {
         'upcoming_events': upcoming_events,
-        'verse_of_day': verse_of_day,
+        # 'verse_of_day': verse_of_day,  # ❌ COMMENTÉ
     }
     return render(request, 'core/home.html', context)
+
 
 def about(request):
     return render(request, 'core/about.html')
 
+
 def contact(request):
     return render(request, 'core/contact.html')
+
 
 def save_phone(request):
     """Sauvegarder le numéro de téléphone"""
@@ -38,15 +39,12 @@ def save_phone(request):
         phone = request.POST.get('phone')
         name = request.POST.get('name', '')
         
-        # Validation
         if not phone:
             messages.error(request, "❌ Veuillez saisir un numéro de téléphone.")
             return redirect(request.META.get('HTTP_REFERER', 'home'))
         
-        # Nettoyer le numéro (enlever les espaces)
         phone = phone.strip()
         
-        # Sauvegarder dans la base
         obj, created = Subscriber.objects.get_or_create(
             phone_number=phone,
             defaults={'name': name}
@@ -63,10 +61,8 @@ def save_phone(request):
 @staff_member_required
 def subscribers_list(request):
     """Page personnalisée pour voir les abonnés WhatsApp"""
-    # Récupérer tous les abonnés
     subscribers = Subscriber.objects.all().order_by('-created_at')
     
-    # Recherche
     search = request.GET.get('search', '')
     if search:
         subscribers = subscribers.filter(
@@ -74,7 +70,6 @@ def subscribers_list(request):
             models.Q(name__icontains=search)
         )
     
-    # Filtrer par actif/inactif
     status = request.GET.get('status', '')
     if status == 'active':
         subscribers = subscribers.filter(is_active=True)
@@ -90,6 +85,7 @@ def subscribers_list(request):
     }
     return render(request, 'core/subscribers.html', context)
 
+
 @staff_member_required
 def subscriber_toggle(request, id):
     """Activer/Désactiver un abonné"""
@@ -99,6 +95,7 @@ def subscriber_toggle(request, id):
     messages.success(request, f'✅ Abonné {subscriber.phone_number} {"activé" if subscriber.is_active else "désactivé"}')
     return redirect('subscribers_list')
 
+
 @staff_member_required
 def subscriber_delete(request, id):
     """Supprimer un abonné"""
@@ -107,6 +104,7 @@ def subscriber_delete(request, id):
     subscriber.delete()
     messages.success(request, f'✅ Abonné {phone} supprimé avec succès !')
     return redirect('subscribers_list')
+
 
 @staff_member_required
 def export_subscribers_csv(request):
@@ -128,5 +126,3 @@ def export_subscribers_csv(request):
         ])
     
     return response
-
-
