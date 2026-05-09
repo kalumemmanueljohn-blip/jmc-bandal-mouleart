@@ -14,7 +14,8 @@
         <h1>📸 Galerie</h1>
         <p>Découvrez nos moments forts en images et vidéos</p>
         
-        {% if user.is_staff or user.is_superuser %}
+        <!-- ✅ Boutons admin - UNIQUEMENT SUPERUSER -->
+        {% if user.is_superuser %}
             <div class="admin-buttons">
                 <a href="{% url 'add_photo' %}" class="btn-add-photo">
                     <i class="bi bi-plus-circle"></i> Ajouter une photo
@@ -73,7 +74,8 @@
                         <div class="video-meta">
                             <span><i class="bi bi-calendar3"></i> {{ video.uploaded_at|date:"d/m/Y" }}</span>
                         </div>
-                        {% if user.is_staff or user.is_superuser %}
+                        <!-- ✅ Bouton Supprimer - UNIQUEMENT SUPERUSER -->
+                        {% if user.is_superuser %}
                             <div class="admin-actions">
                                 <a href="{% url 'delete_video' video.id %}" 
                                    class="btn-delete" 
@@ -105,7 +107,8 @@
                         <i class="bi bi-search"></i>
                         <span>{{ image.title }}</span>
                     </div>
-                    {% if user.is_staff or user.is_superuser %}
+                    <!-- ✅ Bouton Supprimer photo - UNIQUEMENT SUPERUSER -->
+                    {% if user.is_superuser %}
                         <div class="photo-admin-actions">
                             <a href="{% url 'delete_photo' image.id %}" 
                                class="btn-delete-photo" 
@@ -128,7 +131,8 @@
             </div>
             <h3>Aucune photo ou vidéo pour le moment</h3>
             <p>Soyez le premier à partager vos souvenirs !</p>
-            {% if user.is_staff or user.is_superuser %}
+            <!-- ✅ Boutons admin état vide - UNIQUEMENT SUPERUSER -->
+            {% if user.is_superuser %}
                 <div class="empty-buttons">
                     <a href="{% url 'add_photo' %}" class="btn-add-photo">📷 Ajouter une photo</a>
                     <a href="{% url 'add_video' %}" class="btn-add-video">🎥 Ajouter une vidéo</a>
@@ -433,6 +437,30 @@
     margin-right: 3px;
 }
 
+/* Boutons admin */
+.admin-actions {
+    margin-top: 10px;
+    text-align: right;
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.7rem;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-delete:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
 /* Grille photos */
 .photos-grid {
     display: grid;
@@ -497,30 +525,6 @@
 .photo-card:hover .photo-overlay i,
 .photo-card:hover .photo-overlay span {
     transform: translateY(0);
-}
-
-/* Boutons admin */
-.admin-actions {
-    margin-top: 10px;
-    text-align: right;
-}
-
-.btn-delete {
-    background: #e74c3c;
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-    text-decoration: none;
-    font-size: 0.7rem;
-    transition: all 0.3s;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.btn-delete:hover {
-    background: #c0392b;
-    transform: translateY(-2px);
 }
 
 .photo-admin-actions {
