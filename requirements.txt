@@ -16,3 +16,5 @@ gunicorn==21.2.0
 moviepy==1.0.3
 Pillow==10.4.0
 django-imagekit==4.1.0
+pydub==0.25.1
+moviepy==1.0.3
