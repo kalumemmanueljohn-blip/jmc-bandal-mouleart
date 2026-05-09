@@ -1,5 +1,7 @@
 from django.db import models
-from utils.compressors import compress_image, compress_video, compress_audio  # ← AJOUTÉ compress_audio
+# Compression audio désactivée sur Render (pydub incompatible)
+from utils.compressors import compress_image, compress_video
+# compress_audio n'est plus importé
 
 class TeachingCategory(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nom")
@@ -43,13 +45,11 @@ class Teaching(models.Model):
     def save(self, *args, **kwargs):
         # Compression selon le type de contenu
         if self.file and hasattr(self.file, 'file'):
-            # Pour les fichiers audio (MP3)
+            # Pour les fichiers audio (MP3) - Compression manuelle seulement
             if self.content_type == 'audio' and self.file.size > 5 * 1024 * 1024:  # > 5MB
-                try:
-                    self.file = compress_audio(self.file, bitrate='64k')
-                    print(f"✅ Audio compressé: {self.title} ({self.file.size//1024//1024}MB)")
-                except Exception as e:
-                    print(f"❌ Erreur compression audio {self.title}: {e}")
+                print(f"ℹ️ Audio {self.title} fait {self.file.size//1024//1024}MB")
+                print(f"   💡 Pour accélérer l'upload, compressez l'audio avant de l'envoyer")
+                print(f"   📊 Taille recommandée: < 2MB")
             
             # Pour les fichiers vidéo (MP4)
             elif self.content_type == 'video' and self.file.size > 10 * 1024 * 1024:  # > 10MB
@@ -61,7 +61,7 @@ class Teaching(models.Model):
             
             # Pour les fichiers PDF (ne pas compresser)
             elif self.content_type == 'pdf':
-                # Les PDF ne sont pas compressés par image
+                # Les PDF ne sont pas compressés
                 pass
         
         super().save(*args, **kwargs)
