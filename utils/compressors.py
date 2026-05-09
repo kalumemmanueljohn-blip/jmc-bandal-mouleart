@@ -3,7 +3,6 @@ from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
 from moviepy.editor import VideoFileClip
-from pydub import AudioSegment
 import tempfile
 import os
 
@@ -158,67 +157,30 @@ def compress_video_low_quality(video_file):
 
 
 # ============ COMPRESSION AUDIO ============
+# Note: La compression audio automatique est désactivée sur Render car pydub
+# n'est pas compatible avec Python 3.14. Compressez vos audios manuellement
+# avant de les uploader.
+
 def compress_audio(audio_file, bitrate='64k', format='mp3'):
     """
-    Compresse un fichier audio
-    - bitrate: débit binaire (ex: '64k', '96k', '128k')
-    - format: format de sortie ('mp3', 'ogg')
+    Fonction factice - la compression audio n'est pas disponible.
+    Retourne le fichier sans modification.
     """
-    temp_input = None
-    temp_output = None
-    
-    try:
-        # Créer fichier temporaire d'entrée
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as f:
-            for chunk in audio_file.chunks():
-                f.write(chunk)
-            temp_input = f.name
-        
-        # Charger l'audio
-        audio = AudioSegment.from_mp3(temp_input)
-        
-        # Réduire le bitrate (compression)
-        temp_output = tempfile.NamedTemporaryFile(delete=False, suffix=f'.{format}').name
-        
-        # Exporter l'audio compressé
-        audio.export(
-            temp_output,
-            format=format,
-            bitrate=bitrate
-        )
-        
-        # Lire le fichier compressé
-        with open(temp_output, 'rb') as f:
-            compressed_content = f.read()
-        
-        # Nettoyer
-        if temp_input and os.path.exists(temp_input):
-            os.unlink(temp_input)
-        if temp_output and os.path.exists(temp_output):
-            os.unlink(temp_output)
-        
-        return ContentFile(compressed_content, name=audio_file.name)
-    
-    except Exception as e:
-        print(f"Erreur compression audio: {e}")
-        # Nettoyage en cas d'erreur
-        if temp_input and os.path.exists(temp_input):
-            os.unlink(temp_input)
-        if temp_output and os.path.exists(temp_output):
-            os.unlink(temp_output)
-        return audio_file
+    print(f"ℹ️ Audio non compressé automatiquement: {audio_file.name}")
+    print(f"   Compressez-le manuellement avant upload (Audacity, Online Converter, etc.)")
+    return audio_file
 
 
 def compress_audio_high_quality(audio_file):
-    """Compression audio haute qualité"""
-    return compress_audio(audio_file, bitrate='128k')
+    """Fonction factice"""
+    return compress_audio(audio_file)
 
 
 def compress_audio_medium_quality(audio_file):
-    """Compression audio qualité moyenne"""
-    return compress_audio(audio_file, bitrate='96k')
+    """Fonction factice"""
+    return compress_audio(audio_file)
 
 
 def compress_audio_low_quality(audio_file):
-    """Compression audio basse qualité (petit fichier)"""
-    return compress_audio(audio_file, bitrate='48k')
+    """Fonction factice"""
+    return compress_audio(audio_file)
