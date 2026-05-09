@@ -30,6 +30,7 @@
             --radius: 12px;
             --radius-lg: 20px;
             --transition: all 0.3s ease;
+            --admin-badge: #e74c3c;
         }
 
         * {
@@ -134,6 +135,37 @@
             background: linear-gradient(135deg, var(--secondary-dark), #d35400);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+        }
+
+        /* Badge administrateur */
+        .admin-link {
+            position: relative;
+            border-left: 2px solid var(--admin-badge);
+            margin-left: 5px;
+        }
+
+        .admin-link::before {
+            content: "👑";
+            position: absolute;
+            left: -8px;
+            top: -8px;
+            font-size: 12px;
+            background: var(--admin-badge);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+        }
+
+        .nav-divider {
+            width: 1px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 0 5px;
         }
 
         /* ========== MENU HAMBURGER ========== */
@@ -558,6 +590,12 @@
             .verse-text::before,
             .verse-text::after { display: none; }
             .verse-site-name { font-size: 0.7rem; }
+            
+            .nav-divider {
+                width: 100%;
+                height: 1px;
+                margin: 10px 0;
+            }
         }
 
         @media (max-width: 480px) {
@@ -592,11 +630,12 @@
             <ul class="nav-menu" id="navMenu">
                 <li><a href="{% url 'home' %}" class="nav-link"><i class="bi bi-house-door"></i> Accueil</a></li>
                 <li><a href="{% url 'about' %}" class="nav-link"><i class="bi bi-info-circle"></i> À propos</a></li>
-                <li><a href="{% url 'events_list' %}" class="nav-link"><i class="bi bi-calendar-event"></i> Événements</a></li>
+                <li><a href="{% url 'events:events_list' %}" class="nav-link"><i class="bi bi-calendar-event"></i> Événements</a></li>
                 <li><a href="{% url 'teachings' %}" class="nav-link"><i class="bi bi-headphones"></i> Enseignements</a></li>
                 <li><a href="{% url 'blog' %}" class="nav-link"><i class="bi bi-pencil-square"></i> Blog</a></li>
                 <li><a href="{% url 'gallery' %}" class="nav-link"><i class="bi bi-images"></i> Galerie</a></li>
                 <li><a href="{% url 'contact' %}" class="nav-link"><i class="bi bi-envelope"></i> Contact</a></li>
+                
                 {% if user.is_authenticated %}
                     <li><a href="{% url 'dashboard' %}" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                     <li><a href="{% url 'logout' %}" class="nav-link"><i class="bi bi-box-arrow-right"></i> Déconnexion</a></li>
@@ -604,12 +643,22 @@
                     <li><a href="{% url 'login' %}" class="nav-link"><i class="bi bi-key"></i> Connexion</a></li>
                     <li><a href="{% url 'register' %}" class="nav-link"><i class="bi bi-person-plus"></i> Inscription</a></li>
                 {% endif %}
+                
                 <li><a href="{% url 'donate' %}" class="nav-link donate-nav"><i class="bi bi-heart-fill"></i> Don</a></li>
-                {% if user.is_staff %}
-                <li><a href="{% url 'subscribers_list' %}" class="nav-link"><i class="bi bi-people"></i> Abonnés WhatsApp</a></li>
-                {% endif %}
-                {% if user.is_staff or user.is_superuser %}
-                <li><a href="{% url 'manage_users' %}" class="nav-link"><i class="bi bi-people"></i> Gestion membres</a></li>
+                
+                <!-- ✅ SECTION ADMIN - UNIQUEMENT SUPERUSER -->
+                {% if user.is_superuser %}
+                    <li class="nav-divider"></li>
+                    <li class="admin-link">
+                        <a href="{% url 'subscribers_list' %}" class="nav-link">
+                            <i class="bi bi-whatsapp"></i> 📱 Abonnés WhatsApp
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'manage_users' %}" class="nav-link">
+                            <i class="bi bi-shield-lock-fill"></i> 👑 Gestion membres
+                        </a>
+                    </li>
                 {% endif %}
             </ul>
         </div>
@@ -671,7 +720,7 @@
             <div>
                 <h4 class="footer-title"><i class="bi bi-share"></i> Suivez-nous</h4>
                 <div class="social-links">
-                    <a href="https://wa.me/243830360200"  target="blank"><i class="bi bi-whatsapp"></i></a>
+                    <a href="https://wa.me/243830360200" target="blank"><i class="bi bi-whatsapp"></i></a>
                     <a href="#"><i class="bi bi-facebook"></i></a>
                     <a href="#"><i class="bi bi-instagram"></i></a>
                     <a href="#"><i class="bi bi-youtube"></i></a>
