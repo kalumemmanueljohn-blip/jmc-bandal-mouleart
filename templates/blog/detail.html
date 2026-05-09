@@ -35,8 +35,8 @@
             {{ post.content|linebreaks }}
         </div>
 
-        <!-- Boutons admin (modifier/supprimer) -->
-        {% if user.is_staff or user.is_superuser %}
+        <!-- ✅ Boutons admin (modifier/supprimer) - UNIQUEMENT SUPERUSER -->
+        {% if user.is_superuser %}
             <div class="admin-actions">
                 <a href="/admin/blog/blogpost/{{ post.id }}/change/" class="btn-edit" target="_blank">
                     <i class="bi bi-pencil"></i> Modifier
