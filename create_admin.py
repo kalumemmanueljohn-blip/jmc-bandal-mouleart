@@ -8,7 +8,7 @@ django.setup()
 from django.contrib.auth.models import User
 
 def create_admin():
-    """Crée un superutilisateur avec TOUS les droits pour gérer le site"""
+    """Crée ou met à jour un superutilisateur avec TOUS les droits pour gérer le site"""
     
     # Configuration
     USERNAME = 'admin'
@@ -29,24 +29,29 @@ def create_admin():
     print("=" * 60)
     
     try:
-        user, created = User.objects.get_or_create(
-            username=USERNAME,
-            defaults={
-                'email': EMAIL,
-                'is_staff': True,
-                'is_superuser': True,
-                'is_active': True
-            }
-        )
+        # Vérifier si l'utilisateur existe
+        user = User.objects.filter(username=USERNAME).first()
         
-        if not created:
+        if user:
+            print(f"\n📝 Utilisateur '{USERNAME}' trouvé. Mise à jour forcée des droits...")
             user.is_staff = True
             user.is_superuser = True
             user.is_active = True
             user.email = EMAIL
+            user.set_password(PASSWORD)
+            user.save()
+            created = False
+        else:
+            # Créer un nouveau superutilisateur
+            user = User.objects.create_superuser(
+                username=USERNAME,
+                email=EMAIL,
+                password=PASSWORD
+            )
+            created = True
         
-        user.set_password(PASSWORD)
-        user.save()
+        # Vérification finale après sauvegarde
+        user.refresh_from_db()
         
         print(f"\n✅ Administrateur {'créé' if created else 'mis à jour'} avec succès !")
         print("-" * 40)
@@ -57,6 +62,14 @@ def create_admin():
         print(f"⭐ Staff (is_staff): {user.is_staff}")
         print(f"✅ Actif (is_active): {user.is_active}")
         print("-" * 40)
+        
+        # Test d'authentification pour vérifier
+        from django.contrib.auth import authenticate
+        auth_user = authenticate(username=USERNAME, password=PASSWORD)
+        if auth_user:
+            print("✅ Test d'authentification RÉUSSI !")
+        else:
+            print("⚠️ Test d'authentification ÉCHOUÉ - vérifiez le mot de passe")
         
         print("\n📋 ÉTAT DES CONDITIONS DANS VOS TEMPLATES :")
         print("   {% if user.is_superuser %}  → ✅ VRAI (boutons admin visibles)")
@@ -79,6 +92,8 @@ def create_admin():
         
     except Exception as e:
         print(f"\n❌ ERREUR: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 if __name__ == '__main__':
