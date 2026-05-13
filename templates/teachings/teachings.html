@@ -92,9 +92,15 @@
                             <iframe src="{{ teaching.video_url }}" frameborder="0" allowfullscreen></iframe>
                         </div>
                     {% elif teaching.content_type == 'pdf' and teaching.file %}
-                        <a href="{{ teaching.file.url }}" download class="btn-download">
-                            <i class="bi bi-download"></i> Télécharger le PDF
-                        </a>
+                        <!-- ✅ Boutons PDF corrigés pour téléchargement -->
+                        <div class="pdf-actions">
+                            <a href="{{ teaching.file.url }}" target="_blank" class="btn-view-pdf">
+                                <i class="bi bi-eye"></i> Voir le PDF
+                            </a>
+                            <a href="{{ teaching.file.url }}" download="{{ teaching.title|slugify }}.pdf" class="btn-download-pdf">
+                                <i class="bi bi-download"></i> Télécharger
+                            </a>
+                        </div>
                     {% endif %}
                 </div>
                 
@@ -384,24 +390,43 @@
     height: 100%;
 }
 
-.btn-download {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: #e74c3c;
-    color: white;
-    border-radius: 30px;
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.3s;
-    width: 100%;
-    justify-content: center;
+/* ✅ Nouveaux styles pour les boutons PDF */
+.pdf-actions {
+    display: flex;
+    gap: 10px;
     margin-top: 10px;
 }
 
-.btn-download:hover {
+.btn-view-pdf, .btn-download-pdf {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-view-pdf {
+    background: #3498db;
+    color: white;
+}
+
+.btn-view-pdf:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.btn-download-pdf {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-download-pdf:hover {
     background: #c0392b;
     transform: translateY(-2px);
 }
@@ -513,6 +538,10 @@
     
     .header-decoration span {
         width: 30px;
+    }
+    
+    .pdf-actions {
+        flex-direction: column;
     }
 }
 
