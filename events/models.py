@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-from utils.compressors import compress_image  # ← AJOUTÉ
+from utils.compressors import compress_image
 
 class Event(models.Model):
     STATUS_CHOICES = [
@@ -33,25 +33,38 @@ class Event(models.Model):
     
     def save(self, *args, **kwargs):
         # Compression auto de l'image avant sauvegarde
-        if self.image and hasattr(self.image, 'file'):
-            # Vérifier si l'image est trop grande (> 500KB)
-            if self.image.size > 500 * 1024:  # 500KB
-                self.image = compress_image(self.image, max_size=1200, quality=75)
+        try:
+            if self.image and hasattr(self.image, 'file') and self.image.size:
+                if self.image.size > 500 * 1024:  # 500KB
+                    self.image = compress_image(self.image, max_size=1200, quality=75)
+        except Exception as e:
+            print(f"Erreur compression image: {e}")
+            # On continue sans compression en cas d'erreur
+        
         super().save(*args, **kwargs)
     
     def is_full(self):
-        if self.max_participants == 0:
+        try:
+            if self.max_participants == 0:
+                return False
+            return self.participants.count() >= self.max_participants
+        except:
             return False
-        return self.participants.count() >= self.max_participants
     
     def remaining_places(self):
-        if self.max_participants == 0:
+        try:
+            if self.max_participants == 0:
+                return "Illimité"
+            places = self.max_participants - self.participants.count()
+            return max(0, places)
+        except:
             return "Illimité"
-        places = self.max_participants - self.participants.count()
-        return max(0, places)
     
     def participants_count(self):
-        return self.participants.count()
+        try:
+            return self.participants.count()
+        except:
+            return 0
     participants_count.short_description = "Participants"
 
 class Participant(models.Model):
