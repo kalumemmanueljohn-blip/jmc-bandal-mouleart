@@ -2,7 +2,6 @@
 from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
-from moviepy.editor import VideoFileClip
 import tempfile
 import os
 
@@ -75,92 +74,37 @@ def compress_image_webp(image_file, max_size=1200, quality=75):
         return image_file
 
 
-# ============ COMPRESSION VIDEOS ============
+# ============ COMPRESSION VIDEOS (DÉSACTIVÉE POUR RENDER) ============
 def compress_video(video_file, max_width=854, bitrate='800k', fps=24):
     """
-    Compresse une vidéo
-    - max_width: largeur maximale en pixels
-    - bitrate: débit binaire (ex: '800k', '1M')
-    - fps: images par seconde
+    ⚠️ Compression vidéo désactivée sur Render (trop gourmande en mémoire)
+    Retourne le fichier original sans modification
     """
-    temp_input = None
-    temp_output = None
-    
-    try:
-        # Créer fichier temporaire d'entrée
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as f:
-            for chunk in video_file.chunks():
-                f.write(chunk)
-            temp_input = f.name
-        
-        # Charger la vidéo
-        clip = VideoFileClip(temp_input)
-        
-        # Réduire la résolution si trop large
-        if clip.w > max_width:
-            clip = clip.resize(width=max_width)
-        
-        # Réduire les FPS si trop élevé
-        if clip.fps > fps:
-            clip = clip.set_fps(fps)
-        
-        # Créer fichier temporaire de sortie
-        temp_output = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4').name
-        
-        # Exporter la vidéo compressée
-        clip.write_videofile(
-            temp_output,
-            codec='libx264',
-            audio_codec='aac',
-            bitrate=bitrate,
-            audio_bitrate='128k',
-            preset='fast'
-        )
-        
-        clip.close()
-        
-        # Lire le fichier compressé
-        with open(temp_output, 'rb') as f:
-            compressed_content = f.read()
-        
-        # Nettoyer
-        if temp_input and os.path.exists(temp_input):
-            os.unlink(temp_input)
-        if temp_output and os.path.exists(temp_output):
-            os.unlink(temp_output)
-        
-        return ContentFile(compressed_content, name=video_file.name)
-    
-    except Exception as e:
-        print(f"Erreur compression vidéo: {e}")
-        # Nettoyage en cas d'erreur
-        if temp_input and os.path.exists(temp_input):
-            os.unlink(temp_input)
-        if temp_output and os.path.exists(temp_output):
-            os.unlink(temp_output)
-        return video_file
+    print(f"ℹ️ Vidéo non compressée (désactivé sur Render): {video_file.name}")
+    print(f"   💡 Pour réduire la taille, compressez la vidéo avant de l'uploader")
+    print(f"   📊 Taille actuelle: {video_file.size // 1024 // 1024} MB")
+    return video_file
 
 
 def compress_video_high_quality(video_file):
-    """Compression haute qualité"""
-    return compress_video(video_file, max_width=1280, bitrate='1500k', fps=30)
+    """Compression haute qualité - désactivée"""
+    print(f"ℹ️ Compression vidéo désactivée: {video_file.name}")
+    return video_file
 
 
 def compress_video_medium_quality(video_file):
-    """Compression qualité moyenne"""
-    return compress_video(video_file, max_width=854, bitrate='800k', fps=24)
+    """Compression qualité moyenne - désactivée"""
+    print(f"ℹ️ Compression vidéo désactivée: {video_file.name}")
+    return video_file
 
 
 def compress_video_low_quality(video_file):
-    """Compression basse qualité (petit fichier)"""
-    return compress_video(video_file, max_width=640, bitrate='400k', fps=20)
+    """Compression basse qualité - désactivée"""
+    print(f"ℹ️ Compression vidéo désactivée: {video_file.name}")
+    return video_file
 
 
-# ============ COMPRESSION AUDIO ============
-# Note: La compression audio automatique est désactivée sur Render car pydub
-# n'est pas compatible avec Python 3.14. Compressez vos audios manuellement
-# avant de les uploader.
-
+# ============ COMPRESSION AUDIO (DÉSACTIVÉE) ============
 def compress_audio(audio_file, bitrate='64k', format='mp3'):
     """
     Fonction factice - la compression audio n'est pas disponible.
