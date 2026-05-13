@@ -9,27 +9,27 @@ services:
       python manage.py migrate
       python -c "
 from django.contrib.auth.models import User;
-user, created = User.objects.get_or_create(
-    username='admin',
-    defaults={
-        'email': 'admin@exemple.com',
-        'is_staff': True,
-        'is_superuser': True,
-        'is_active': True
-    }
-);
-if not created:
+# Récupérer l'utilisateur admin
+user = User.objects.filter(username='admin').first();
+if user:
+    # Forcer les droits
     user.is_staff = True;
     user.is_superuser = True;
     user.is_active = True;
-user.set_password('Admin123!');
-user.save();
-print('='*50);
-print('✅ ADMINISTRATEUR PRÊT');
-print('='*50);
-print('Nom: admin');
-print('Mot de passe: Admin123!');
-print('is_superuser:', user.is_superuser);
+    user.save();
+    print('='*50);
+    print('✅ ADMIN MIS À JOUR');
+    print('='*50);
+    print('Nom: admin');
+    print('Mot de passe: Admin123!');
+    print('is_superuser:', user.is_superuser);
+    print('is_staff:', user.is_staff);
+else:
+    # Créer un nouveau superuser
+    User.objects.create_superuser('admin', 'admin@exemple.com', 'Admin123!');
+    print('='*50);
+    print('✅ ADMIN CRÉÉ');
+    print('='*50);
 print('='*50);
 "
     startCommand: gunicorn jeunesse_eglise.wsgi:application --bind 0.0.0.0:$PORT
