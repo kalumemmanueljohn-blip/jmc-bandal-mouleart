@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-from utils.compressors import compress_image
+# from utils.compressors import compress_image  # ← COMPLÈTEMENT DÉSACTIVÉ
 
 class Event(models.Model):
     STATUS_CHOICES = [
@@ -32,39 +32,21 @@ class Event(models.Model):
         return self.title
     
     def save(self, *args, **kwargs):
-        # Compression auto de l'image avant sauvegarde
-        try:
-            if self.image and hasattr(self.image, 'file') and self.image.size:
-                if self.image.size > 500 * 1024:  # 500KB
-                    self.image = compress_image(self.image, max_size=1200, quality=75)
-        except Exception as e:
-            print(f"Erreur compression image: {e}")
-            # On continue sans compression en cas d'erreur
-        
+        # PAS DE COMPRESSION
         super().save(*args, **kwargs)
     
     def is_full(self):
-        try:
-            if self.max_participants == 0:
-                return False
-            return self.participants.count() >= self.max_participants
-        except:
+        if self.max_participants == 0:
             return False
+        return self.participants.count() >= self.max_participants
     
     def remaining_places(self):
-        try:
-            if self.max_participants == 0:
-                return "Illimité"
-            places = self.max_participants - self.participants.count()
-            return max(0, places)
-        except:
+        if self.max_participants == 0:
             return "Illimité"
+        return self.max_participants - self.participants.count()
     
     def participants_count(self):
-        try:
-            return self.participants.count()
-        except:
-            return 0
+        return self.participants.count()
     participants_count.short_description = "Participants"
 
 class Participant(models.Model):
