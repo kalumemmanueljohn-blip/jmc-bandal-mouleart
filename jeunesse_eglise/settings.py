@@ -98,7 +98,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
         'OPTIONS': {
-            'timeout': 30,  # Augmenter le timeout pour éviter les blocages
+            'timeout': 30,
         }
     }
 }
@@ -135,6 +135,14 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# ✅ AJOUT POUR LES PDF - Configuration des types MIME
+import mimetypes
+mimetypes.add_type('application/pdf', '.pdf', True)
+mimetypes.add_type('application/octet-stream', '.pdf', False)
+
+# ✅ AJOUT POUR LES FICHIERS EN PRODUCTION
+FORCE_SCRIPT_NAME = None
 
 # ============================================
 # UPLOAD DE FICHIERS (avec compression)
@@ -185,4 +193,5 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
+    # ✅ MODIFICATION POUR LES PDF - Permet de détecter correctement les types de fichiers
+    SECURE_CONTENT_TYPE_NOSNIFF = False
