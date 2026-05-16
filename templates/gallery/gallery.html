@@ -14,7 +14,7 @@
         <h1>📸 Galerie</h1>
         <p>Découvrez nos moments forts en images et vidéos</p>
         
-        <!-- ✅ Boutons admin - UNIQUEMENT SUPERUSER -->
+        <!-- ✅ Boutons admin - UNIQUEMENT SUPERUSER (comme dans create_admin.py) -->
         {% if user.is_superuser %}
             <div class="admin-buttons">
                 <a href="{% url 'add_photo' %}" class="btn-add-photo">
@@ -157,6 +157,7 @@
 </div>
 
 <style>
+/* Ton CSS reste identique */
 .gallery-page {
     max-width: 1200px;
     margin: 0 auto;
