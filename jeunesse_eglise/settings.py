@@ -82,12 +82,20 @@ TEMPLATES = [
 ]
 
 # ============================================
-# AUTHENTIFICATION
+# AUTHENTIFICATION - SESSIONS
 # ============================================
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'home'
+
+# ✅ AJOUT : Durée de session prolongée (2 semaines)
+SESSION_COOKIE_AGE = 1209600  # 2 semaines en secondes
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = True  # Prolonge la session à chaque requête
+SESSION_COOKIE_SECURE = not DEBUG  # Sécurisé en production
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
 
 # ============================================
 # DATABASE - SQLite3 (optimisé)
@@ -136,16 +144,15 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# ✅ AJOUT POUR LES PDF - Configuration des types MIME
+# Configuration des types MIME
 import mimetypes
 mimetypes.add_type('application/pdf', '.pdf', True)
 mimetypes.add_type('application/octet-stream', '.pdf', False)
 
-# ✅ AJOUT POUR LES FICHIERS EN PRODUCTION
 FORCE_SCRIPT_NAME = None
 
 # ============================================
-# UPLOAD DE FICHIERS (avec compression)
+# UPLOAD DE FICHIERS
 # ============================================
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
@@ -190,8 +197,6 @@ CHAT_FILTERED_WORDS = []
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
-    # ✅ MODIFICATION POUR LES PDF - Permet de détecter correctement les types de fichiers
     SECURE_CONTENT_TYPE_NOSNIFF = False
