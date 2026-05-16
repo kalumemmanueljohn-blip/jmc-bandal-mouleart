@@ -1,5 +1,4 @@
 from django.db import models
-# from utils.compressors import compress_image, compress_video  # ← COMPLÈTEMENT COMMENTÉ
 
 class GalleryCategory(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nom")
@@ -26,10 +25,6 @@ class GalleryImage(models.Model):
         verbose_name_plural = "Images"
         ordering = ['-uploaded_at']
     
-    def save(self, *args, **kwargs):
-        # PAS DE COMPRESSION
-        super().save(*args, **kwargs)
-    
     def __str__(self):
         return self.title
 
@@ -48,10 +43,6 @@ class GalleryVideo(models.Model):
         verbose_name = "Vidéo"
         verbose_name_plural = "Vidéos"
         ordering = ['-uploaded_at']
-    
-    def save(self, *args, **kwargs):
-        # PAS DE COMPRESSION VIDEO
-        super().save(*args, **kwargs)
     
     def __str__(self):
         return self.title
