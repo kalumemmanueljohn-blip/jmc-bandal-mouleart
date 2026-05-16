@@ -1,5 +1,5 @@
 from django.db import models
-# from utils.compressors import compress_image, compress_video  # ← COMMENTÉ TEMPORAIREMENT
+# from utils.compressors import compress_image, compress_video  # ← COMPLÈTEMENT COMMENTÉ
 
 class GalleryCategory(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nom")
@@ -27,13 +27,7 @@ class GalleryImage(models.Model):
         ordering = ['-uploaded_at']
     
     def save(self, *args, **kwargs):
-        # Compression DÉSACTIVÉE
-        # try:
-        #     if self.image and hasattr(self.image, 'file'):
-        #         if self.image.size > 500 * 1024:
-        #             self.image = compress_image(self.image, max_size=1200, quality=75)
-        # except Exception as e:
-        #     print(f"Erreur compression: {e}")
+        # PAS DE COMPRESSION
         super().save(*args, **kwargs)
     
     def __str__(self):
@@ -56,17 +50,7 @@ class GalleryVideo(models.Model):
         ordering = ['-uploaded_at']
     
     def save(self, *args, **kwargs):
-        # Compression DÉSACTIVÉE
-        # if self.video_file and hasattr(self.video_file, 'file'):
-        #     if self.video_file.size > 10 * 1024 * 1024:
-        #         try:
-        #             self.video_file = compress_video(self.video_file, max_width=854, bitrate='800k', fps=24)
-        #         except Exception as e:
-        #             print(f"Erreur compression vidéo: {e}")
-        # 
-        # if self.thumbnail and hasattr(self.thumbnail, 'file'):
-        #     if self.thumbnail.size > 200 * 1024:
-        #         self.thumbnail = compress_image(self.thumbnail, max_size=640, quality=70)
+        # PAS DE COMPRESSION VIDEO
         super().save(*args, **kwargs)
     
     def __str__(self):
